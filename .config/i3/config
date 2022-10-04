@@ -15,7 +15,7 @@ focus_follows_mouse yes
 # Right-Click+$mod to resize windows
 floating_modifier $mod
 force_focus_wrapping no
-font pango:DejaVu Sans Mono, FontAwesome, Monoid Mono 13
+font pango:Noto Sans Regular, FontAwesome, Monoid Mono 12
 floating_maximum_size 1920 x 1080
 floating_minimum_size 85 x 85
 popup_during_fullscreen smart
@@ -29,7 +29,7 @@ hide_edge_borders none
 
 exec --no-startup-id /usr/bin/nm-applet
 exec --no-startup-id blueberry-tray
-exec --no-startup-id /usr/bin/parcellite        # Clipboard
+exec --no-startup-id /usr/bin/xfce4-clipman        # Clipboard
 exec --no-startup-id /usr/bin/thunderbird
 exec --no-startup-id /usr/bin/numlockx
 exec --no-startup-id /usr/bin/picom -cbCf
@@ -45,6 +45,11 @@ exec --no-startup-id conky -d -c $HOME/.config/i3/conky/conky-left
 exec xautolock -detectsleep -time 10 -locker "$HOME/.config/i3/i3lock/lock_and_blur.sh" \
 	-notify 30 \
 	-notifier "notify-send -u critical -t 10000 -- 'locking screen in 30 seconds'"
+
+# autotiling script
+# https://github.com/nwg-piotr/autotiling
+# `yay -S autotiling ;) (it is in AUR)
+exec_always --no-startup-id autotiling
 
 #----------------------------------------------------------------SCRATCHPAD
 
@@ -78,15 +83,12 @@ bindsym $mod+q split toggle; exec notify-send 'tile toggle'
 
 #--------------------------------------------------------------RUN PROGRAMS
 
-bindsym $mod+d exec --no-startup-id rofi -show drun
+#bindsym $mod+d exec --no-startup-id rofi -show drun
 bindsym $mod+f exec --no-startup-id /usr/bin/firefox
 bindsym $mod+i exec --no-startup-id urxvt -e htop 
 bindsym $mod+m exec --no-startup-id wine ~/Downloads/winbox64.exe -name WinBox
 bindsym $mod+n exec --no-startup-id /bin/bash ~/bin/visionclientlauncher/app/visionclientlauncher.sh
-bindsym $mod+p exec --no-startup-id $HOME/.config/i3/promote-window
-bindsym $mod+x exec --no-startup-id $HOME/.config/i3/i3lock/lock_and_blur.sh
-#bindsym $mod+Shift+comma exec --no-startup-id /usr/bin/autorandr mobile 
-#bindsym $mod+Shift+period exec --no-startup-id /usr/bin/autorandr work
+bindsym $mod+x exec --no-startup-id $HOME/.config/i3/i3lock/lock_and_blur.sh 
 bindsym $mod+F3 exec --no-startup-id pcmanfm 
 #bindsym $mod+F12 exec --no-startup-id /usr/bin/brightnessctl s +10%
 #bindsym $mod+F11 exec --no-startup-id /usr/bin/brightnessctl s 10%-
@@ -100,30 +102,38 @@ bindsym $mod+Return exec --no-startup-id urxvt
 bindsym $mod+Shift+Return exec --no-startup-id urxvt -name term
 
 # volume
-bindsym XF86AudioRaiseVolume exec amixer -D pulse sset Master 5%+ && pkill -RTMIN+1 i3blocks
-bindsym XF86AudioLowerVolume exec amixer -D pulse sset Master 5%- && pkill -RTMIN+1 i3blocks
+bindsym XF86AudioRaiseVolume exec amixer -D pulse sset Master 5%+ && pkill -RTMIN+1 /usr/bin/i3blocks
+bindsym XF86AudioLowerVolume exec amixer -D pulse sset Master 5%- && pkill -RTMIN+1 /usr/bin/i3blocks
 
-# Or For a Granular Volume Control
-#bindsym $mod+XF86AudioRaiseVolume exec amixer -D pulse sset Master 1%+ && pkill -RTMIN+1 i3blocks
-#bindsym $mod+XF86AudioLowerVolume exec amixer -D pulse sset Master 1%- && pkill -RTMIN+1 i3blocks
+# Or For a Granular Volume Control 
+bindsym $mod+XF86AudioRaiseVolume exec amixer -D pulse sset Master 1%+ && pkill -RTMIN+1 i3blocks
+bindsym $mod+XF86AudioLowerVolume exec amixer -D pulse sset Master 1%- && pkill -RTMIN+1 i3blocks
 
 # Mute
 bindsym XF86AudioMute exec amixer sset Master toggle && killall -USR1 i3blocks
 
 # Backlight control
-bindsym XF86MonBrightnessUp exec /usr/bin/xbacklight +5 && notify-send "Brightness - $(xbacklight -get | cut -c1-2)%
-bindsym XF86MonBrightnessDown exec /usr/bin/xbacklight -5 && notify-send "Brightness - $(xbacklight -get | cut -c1-2)%
+bindsym XF86MonBrightnessUp exec /usr/bin/xbacklight +5 && notify-send "Brightness - $(xbacklight -get | cut -c1-2)%"
+bindsym XF86MonBrightnessDown exec /usr/bin/xbacklight -5 && notify-send "Brightness - $(xbacklight -get | cut -c1-2)%"
+
+# Redirect sound to headphones
+#bindsym $mod+p exec /usr/local/bin/switch-audio-port
 
 # Caps Indicator 
-bindsym --release Caps_Lock exec pkill -SIGRTMIN+11 i3blocks
+bindsym --release Caps_Lock exec pkill -SIGRTMIN+11 /usr/bin/i3blocks
 #bindsym --release Num_Lock exec pkill -SIGRTMIN+11 i3blocks
 
-#bindsym XF86AudioRaiseVolume exec amixer -q set Master 5%+ unmute
-#bindsym XF86AudioLowerVolume exec amixer -q set Master 5%- unmute
-#bindsym XF86AudioMute exec amixer -D pulse set Master 1+ toggle
+# Open new empty workspace
+bindsym $mod+Shift+n exec $HOME/.config/i3/scripts/empty_workspace
 
-# Power Profile menu switch (rofi)
+# Power Profiles menu switcher (rofi)
 bindsym $mod+Shift+t exec ~/.config/i3/scripts/power-profiles
+
+# exit-menu
+bindsym $mod+p exec ~/.config/i3/scripts/powermenu
+
+# set powersavings for display:
+exec --no-startup-id xset s 480 dpms 600 600 600
 
 #-----------------------------------------------------------------FLOATING WINDOWS
 
@@ -142,12 +152,12 @@ for_window [title="^WinBox"] floating enable
     for_window [title="^WinBox"] resize set 720 480
 
 # Sticky floating windows. Only takes effect if the windows is floating
-for_window [instance="^URxvt"] sticky enable
-for_window [class="^Brave*"] sticky enable
-for_window [class="^Firefox*"] sticky enable
+for_window [instance="URxvt"] sticky enable
+for_window [class="Brave*"] sticky enable
+for_window [class="(?i)firefox*"] sticky enable
 for_window [class="^org.remmina.Remmina"] sticky enable
-for_window [class="^Thunar"] sticky enable
-for_window [class="^Pcmanfm"] sticky enable
+for_window [class="Thunar"] sticky enable
+for_window [class="Pcmanfm"] sticky enable
 for_window [class="^Arandr"] sticky enable
 for_window [title="^WinBox"] sticky enable
 
@@ -172,21 +182,21 @@ set $ws10 "10:"
 #workspace "10:" output eDP-2
 
 # Open applications on specific workspaces 
-assign [class="^Brave*"] $ws1
-assign [class="^Firefox"] $ws1
-assign [class="^Pale Moon"] $ws1
-assign [class="^Midori"] $ws1
-assign [class="^Librewolf"] $ws1
-assign [class="^Thunderbird"] $ws3
-assign [class="^Mail"] $ws3         # Added due to thunderbird not automatically moving to workspace 3
-assign [class="^Signal"] $ws4
-assign [class="^Gimp"] $ws5
+assign [class="Brave*"] $ws1
+assign [class="(?i)firefox"] $ws1
+assign [class="Pale Moon"] $ws1
+assign [class="Midori"] $ws1
+assign [class="Librewolf"] $ws1
+assign [class="Thunderbird"] $ws3
+assign [class="Mail"] $ws3         # Added due to thunderbird not automatically moving to workspace 3
+assign [class="Signal"] $ws4
+assign [class="Gimp"] $ws5
 #assign [class="^org.remmina.Remmina"] $ws6
-assign [class="^Manuskript"] $ws6
-assign [class="^Spotify*"] $ws8
-assign [class="^TeamViewer"] $ws9
-assign [class="^Anydesk"] $ws9
-assign [class="^com-inductive*"] $ws10
+assign [class="Manuskript"] $ws6
+assign [class="Spotify*"] $ws8
+assign [class="TeamViewer"] $ws9
+assign [class="Anydesk"] $ws9
+assign [class="com-inductive*"] $ws10
 
 #--------------------------------------------------------------------WINDOW FOCUS
 
@@ -205,14 +215,14 @@ bindsym $mod+Shift+j move down 40 px
 bindsym $mod+Shift+k move up 40 px
 bindsym $mod+Shift+l move right 40 px
 
-for_window [class="^Brave*"] focus
-for_window [class="^Firefox*"] focus
-for_window [class="^Signal"] focus
-for_window [class="^TeamViewer"] focus
-for_window [class="^Spotify*"] focus
-#for_window [class="^org.remmina.Remmina"] focus
-for_window [class="^Gimp"] focus
-for_window [class="^com-inductive*"] focus
+for_window [class="Brave*"] focus
+for_window [class="(?i)firefox"] focus
+for_window [class="Signal"] focus
+for_window [class="TeamViewer"] focus
+for_window [class="Spotify*"] focus
+#for_window [class="org.remmina.Remmina"] focus
+for_window [class="Gimp"] focus
+for_window [class="com-inductive*"] focus
 
 #-----------------------------------------------------------------WINDOW SPLITTING
 
@@ -291,8 +301,8 @@ for_window [title="^Event Tester$" id="0x1000001"] floating enable
 
 #--------------------------------------------------------------THUNDERBIRD WINODWS
 
-for_window [class="^Thunderbird$" title=" ? Mozilla Thunderbird$"] floating disabled, move container to workspace 3
-for_window [class="^Thunderbird$" title="Sending Message - Re:.*$"] floating enable, move container to workspace 3
+for_window [class="Thunderbird$" title=" ? Mozilla Thunderbird$"] floating disabled, move container to workspace 3
+for_window [class="Thunderbird$" title="Sending Message - Re:.*$"] floating enable, move container to workspace 3
 
 #--------------------------------------------------------------TERMINOLOGY WINDOWS
 
@@ -300,55 +310,41 @@ for_window [class="^terminology$"] floating disabled
 
 #---------------------------------------------------------------------GIMP WINDOWS
 
-for_window [class="^Gimp$" title="^GNU Image Manipulation Program$"] floating disabled
-for_window [class="^Gimp$" title=" ? GIMP$"] floating disabled
-for_window [class="^Gimp$" title="Tool Options$"] floating enable
-for_window [class="^Gimp$" title="^Quit GIMP$"] floating enable
+for_window [class="Gimp$" title="GNU Image Manipulation Program$"] floating disabled
+for_window [class="Gimp$" title="  GIMP$"] floating disabled
+for_window [class="Gimp$" title="Tool Options$"] floating enable
+for_window [class="Gimp$" title="Quit GIMP$"] floating enable
 
 #---------------------------------------------------------------------------STEAM
 
-for_window [class="^Steam$"] floating disabled
-for_window [class="^Steam$" title=" - Steam$"] floating enable
-for_window [class="^Steam$" title="^About Steam$"] floating enable
-for_window [class="^Steam$" title="^Add a Game$"] floating enable
-for_window [class="^Steam$" title="^Create or select new Steam library folder:$"] floating enable
-for_window [class="^Steam$" title="^Friends List$"] floating enable
-for_window [class="^Steam$" title="^Install - "] floating enable
-for_window [class="^Steam$" title="^Product Activation$"] floating enable
-for_window [class="^Steam$" title="^Properties - "] floating enable
-for_window [class="^Steam$" title="^Settings$"] floating enable
-for_window [class="^Steam$" title="^Steam - Error$"] floating enable
-for_window [class="^Steam$" title="^Steam - News "] floating enable
-for_window [class="^Steam$" title="^Steam Library Folders$"] floating enable
-for_window [class="^Steam$" title="^Validating Steam files - "] floating enable
+for_window [class="Steam$"] floating disabled
+for_window [class="Steam$" title=" - Steam$"] floating enable
+for_window [class="Steam$" title="About Steam$"] floating enable
+for_window [class="Steam$" title="Add a Game$"] floating enable
+for_window [class="Steam$" title="Create or select new Steam library folder:$"] floating enable
+for_window [class="Steam$" title="Friends List$"] floating enable
+for_window [class="Steam$" title="Install - "] floating enable
+for_window [class="Steam$" title="Product Activation$"] floating enable
+for_window [class="Steam$" title="Properties - "] floating enable
+for_window [class="Steam$" title="Settings$"] floating enable
+for_window [class="Steam$" title="Steam - Error$"] floating enable
+for_window [class="Steam$" title="Steam - News "] floating enable
+for_window [class="Steam$" title="Steam Library Folders$"] floating enable
+for_window [class="Steam$" title="Validating Steam files - "] floating enable
 
 #---------------------------------------------------------------------------LINKS2
 
 for_window [class="^Links$" title="^Links - "] floating enable
 
-#-------------------------------------------------------------SOME COLORS
-
-# Define Colors
-set $darkbluetrans	#08052be6 
-set $darkblue		#08052b
-set $lightblue		#5294e2
-set $urgentred		#e53935
-set $white		#ffffff
-set $black		#000000
-set $purple		#e345ff
-set $darkgrey		#383c4a
-set $grey		#b0b5bd
-set $mediumgrey		#8b8b8b
-set $yellowbrown	#e1b700
-
+#-------------------------------------------------------------THEME COLORS
 
 # class                          border  backgr. text    indic.  child_border
-client.focused				    #7b7d7d #7b7d7d #000000 #7b7d7d #7b7d7d
-client.focused_inactive	        #111111	#111111 #dddddd #111111 #111111
-#client.unfocused               #222222 #000000 #555555 #222222 #222222
-client.urgent				    #3B89B5	#3B89B5 #a5a5a5 #85678F
-client.placeholder              #222222 #000000 #000000 #222222 #222222
-client.background			    #1A1A1A
+client.focused				    #556064 #556064 #80fff9 #fdf6e3
+client.focused_inactive	        #2f3d44 #2f3d44 #1abc9c #454958
+client.unfocused                #2f3d44 #2f3d44 #1abc9c #454958
+client.urgent				    #cb4b16 #fdf6e3 #1abc9c #268bd2
+client.placeholder              #000000 #0c0c0c #ffffff #000000
+client.background			    #2b2b2b
 
 #--------------------------------------------------------------BAR OPTIONS
 
@@ -358,11 +354,18 @@ bar {
 	output primary
 	output eDP-1
         status_command i3blocks -c ~/.config/i3/i3blocks/i3blocks
-        #status_command i3status-rs ~/.config/i3/i3status-rs/config.toml
         tray_output eDP-1
         tray_padding 2
 		colors {
-		    background #333333 # menubar color
+		    background #222d31 # menubar color
+		    statusline #f9faf9 # menubar font color
+		    separator #454947
+		    #                  border  backgr. text
+            focused_workspace  #16a085 #16a085 #292F34 # menubar focused color
+            active_workspace   #595B5B #353836 #FDF6E3
+            inactive_workspace #222d31 #222D31 #EEE8D5
+            binding_mode       #16a085 #2C2C2C #F9FAF9
+            urgent_workspace   #16a085 #FDF6E3 #E5201D
 	}
 }
 
@@ -380,3 +383,24 @@ bar {
 # FOR TESTING
 #bindsym $mod+F12 exec "notify-send Hello, i3"
 #bindsym $mod+F12 exec "notify-send \\"Hello, i3; from $USER\\""
+
+#####################################
+# Application menu handled by rofi: #
+#####################################
+
+## rofi bindings fancy application menu ($mod+d /F9 optional disabled)
+
+bindsym $mod+d exec rofi -modi drun -show drun \
+		-config ~/.config/rofi/rofidmenu.rasi
+
+#bindsym F9 exec rofi -modi drun -show drun \
+#		-config ~/.config/rofi/rofidmenu.rasi
+
+## rofi bindings for window menu ($mod+t /F10 optional disabled)
+
+bindsym $mod+t exec rofi -show window \
+		-config ~/.config/rofi/rofidmenu.rasi
+
+#bindsym F10 exec rofi -show window \
+#		-config ~/.config/rofi/rofidmenu.rasi
+
