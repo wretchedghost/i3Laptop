@@ -75,7 +75,7 @@ bindsym $mod+Shift+s sticky toggle
 bindsym $mod+Shift+q kill
 bindsym $mod+Shift+F11 fullscreen toggle
 bindsym $mod+s layout stacking
-bindsym $mod+w layout tabbed
+bindsym $mod+w layout toggle tabbed splith
 bindsym $mod+e layout toggle split
 bindsym $mod+semicolon split h;exec notify-send 'tile horizontally'
 bindsym $mod+v split v;exec notify-send 'tile vertically'
@@ -359,9 +359,9 @@ bar {
 		colors {
 		    background #222d31 # menubar color
 		    statusline #f9faf9 # menubar font color
-		    separator #454947
+		    separator #454947  # menubar separtator color
 		    #                  border  backgr. text
-            focused_workspace  #16a085 #16a085 #292F34 # menubar focused color
+            focused_workspace  #5d12b3 #5d12b3 #ededed # menubar focused color
             active_workspace   #595B5B #353836 #FDF6E3
             inactive_workspace #222d31 #222D31 #EEE8D5
             binding_mode       #16a085 #2C2C2C #F9FAF9
