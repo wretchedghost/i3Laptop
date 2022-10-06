@@ -187,8 +187,8 @@ assign [class="(?i)firefox"] $ws1
 assign [class="Pale Moon"] $ws1
 assign [class="Midori"] $ws1
 assign [class="Librewolf"] $ws1
-assign [class="Thunderbird"] $ws3
-assign [class="Mail"] $ws3         # Added due to thunderbird not automatically moving to workspace 3
+assign [class="(?i)thunderbird"] $ws3
+assign [class="mail"] $ws3         # Added due to thunderbird not automatically moving to workspace 3
 assign [class="Signal"] $ws4
 assign [class="Gimp"] $ws5
 #assign [class="^org.remmina.Remmina"] $ws6
@@ -338,6 +338,47 @@ for_window [class="^Links$" title="^Links - "] floating enable
 
 #-------------------------------------------------------------THEME COLORS
 
+# Color Options
+
+# purples/pinks/reds
+# amaranth #9f2b68
+# tyrian purple #630330
+# wisteria #bdb5d5
+# purple #800080
+# light violet #cf9fff
+# light purple #cbc3e3
+# dark purple #301934
+# dark pink #aa336a
+# crimson #dc143c
+# carmine #d70040
+# cherry #d2042d
+
+# oranges
+# amber #ffbf00
+# golden yellow #ffc000
+# orange #ffa500
+# pumpkin orange #ff7518
+# tangerine # f08000
+# safety orange #ff5f15
+
+# yellows
+# cadmium yellow # fdda0d
+# gold #ffd700
+# lemon yellow # fafa33
+# saffron #f4c430
+
+# grays
+# ash gray #b2b3b5
+# blue gray #7393b3
+# charcoal #36454f
+# glaucous #6082b6
+# platinum #e5e4e2
+# silver #c0c0c0
+# slate gray #708090
+# smoke #848884
+# steel gray #71797e
+
+
 # class                          border  backgr. text    indic.  child_border
 client.focused				    #556064 #556064 #80fff9 #fdf6e3
 client.focused_inactive	        #2f3d44 #2f3d44 #1abc9c #454958
@@ -352,9 +393,9 @@ client.background			    #2b2b2b
 bar {
 	position top
 	output primary
-	output eDP-1
+	output eDP1
         status_command i3blocks -c ~/.config/i3/i3blocks/i3blocks
-        tray_output eDP-1
+        tray_output eDP1
         tray_padding 2
 		colors {
 		    background #222d31 # menubar color
@@ -365,7 +406,8 @@ bar {
             active_workspace   #595B5B #353836 #FDF6E3
             inactive_workspace #222d31 #222D31 #EEE8D5
             binding_mode       #16a085 #2C2C2C #F9FAF9
-            urgent_workspace   #16a085 #FDF6E3 #E5201D
+            #urgent_workspace   #800080 #800080 #E5201D
+            urgent_workspace   #953553 #953553 #ededed
 	}
 }
 
@@ -383,6 +425,8 @@ bar {
 # FOR TESTING
 #bindsym $mod+F12 exec "notify-send Hello, i3"
 #bindsym $mod+F12 exec "notify-send \\"Hello, i3; from $USER\\""
+
+#-----------------------------------------------------------------ROFI
 
 #####################################
 # Application menu handled by rofi: #
