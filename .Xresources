@@ -2,8 +2,12 @@
 
 !*.foreground: #93a1a1
 *.foreground: #eeeeee
+<<<<<<< HEAD
 !*background: #141c21
 *background: #222d31
+=======
+*.background: #141c21
+>>>>>>> 8955a666ffe46f60ddec91ffd2c64682c1bc2fa7
 *.cursorColor: #afbfbf
 
 !URxvt*font: xft:terminus:size=16
