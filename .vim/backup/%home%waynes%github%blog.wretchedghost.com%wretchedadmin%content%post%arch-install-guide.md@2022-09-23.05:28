@@ -1,0 +1,322 @@
+---
+title: "Arch Install Guide"
+date: 2022-09-01T20:46:55Z
+tags: ['linux', 'arch', 'guide', 'new']                    #Tags should be ['linux', 'whatever', 'etc']
+thumbnail: ""               #Shows on page itself ("/images/<pic.png>")
+featured_image: ""          #Shows on main page (posts) ("/images/pic.png>")
+lastmod: ""
+omit_header_text: "true"    #Gets rid of annoying double title post in header)
+draft: "false"
+description: ""             
+---
+#### If wifi is needed
+```
+# iwctl
+station wlan0 scan
+station wlan0 connect <SSID>
+```
+
+#### Set the date and time
+```
+# timedatectl set-ntp true
+```
+#### Set bigger font in the tty
+```bash
+# setfont ter-132b
+```
+
+#### Partition the disks
+```bash
+# gdisk /dev/nvme0n1
++512M ef00
+100% 8300
+```
+
+#### Create the encrypted root partion
+```bash
+# cryptsetup luksFormat /dev/nvme0n1p2
+# cryptsetup luksOpen /dev/nvme0n1p2 cryptroot
+```
+
+#### Build the filesystems
+```
+# mkfs.vfat -F32 /dev/nvme0n1p1
+# mkfs.ext4 /dev/mapper/cryptroot
+```
+
+#### Mount root and boot
+```
+# mount /dev/mapper/cryptroot /mnt
+# mkdir -p /mnt/boot
+# mount /dev/nvme0n1p1 /mnt/boot
+```
+
+#### Setup the Swapfile
+>24576 = 24G
+>32768 = 32G
+
+```
+# dd if=/dev/zero of=/mnt/.swapfile bs=1M count=24576 status=progress
+# chmod 600 /mnt/.swapfile
+# mkswap /mnt/.swapfile
+# swapon /mnt/.swapfile
+```
+
+#### Install the base files and generate the fstab. Also build the tmpfs
+```
+# pacstrap /mnt base base-devel linux linux-firmware vim git screenfetch networkmanager grub efibootmgr intel-ucode bash-completion
+(linux-lts/linux-lts-headers, linux-zen/linux-zen-headers, linux-hardended/linux-hardended-headers can also be install or swapped out for linux/linux-headers)
+
+# genfstab -U /mnt >> /mnt/etc/fstab
+
+# vim /mnt/etc/fstab
+tmpfs /tmp tmpfs rw,nodev,nosuid,size=8G,noatime,mode=1700 0 0
+```
+>(Also change all relatime to noatime EXCEPT for /boot)
+
+#### Chroot into the new system drive
+```
+# arch-chroot /mnt /bin/bash
+```
+
+#### Setup the time and make it persistant
+```
+# ln -sf /usr/share/zoneinfo/America/Chicago /etc/localtime
+# hwclock --systohc
+# vim /etc/locale.gen 
+(uncomment en_US.UTF-8)
+# locale-gen
+# echo 'LANG=en_US.UTF-8' > /etc/locale.conf
+```
+
+#### Setup hostname and hosts files
+```
+# echo <hostname> > /etc/hostname
+# vim /etc/hosts
+>(127.0.0.1	localhost
+>127.0.1.1	tpx1.wretchednet.in	tpx1)
+```
+
+#### Create the root password
+```
+# passwd
+```
+
+#### Edit the kernel hooks and tweak pacman.conf
+```
+# vim /etc/mkinitcpio.conf
+```
+>(add keyboard between autodetect and modconf and ecrypt between block and filesystem in the HOOKS array_)
+
+```
+# mkinitcpio -p linux 
+```
+>(For linux kernel. Use linux-lts for LTS kernel, linux-hardened, and or linux-zen)
+
+```
+# vim /etc/pacman.conf
+```
+>(uncommenct Color and add ILoveCandy. Uncomment multilib and the line underneath)
+
+
+#### Build grub
+```
+# blkid -s UUID -o value /dev/nvme0n1p2 >> /etc/default/grub
+# vim /etc/default/grub
+>(set GRUB_CMDLINE_LINUX="cryptdevice=UUID=<uuid-here>:cryptroot" and uncomment GRUB_ENABLE_CRYPTODISK=y_
+# grub-install --target=x86_64-efi --efi-directory=/boot --bootloader-id=ARCHLINUX
+# grub-mkconfig -o /boot/grub/grub.cfg
+```
+
+#### Make sure wifi will work after reboot
+```
+# systemctl enable NetworkManager
+```
+
+#### Exit out of the chrooted system
+```
+# exit 
+```
+
+#### Reboot
+```
+# reboot
+```
+
+#### Extras
+I found this blog post that is almost exactly how I want my arch setup to be albeit with some modifications that I will note here in the page.
+[Bespian's Arch install](https://blog.bespinian.io/posts/installing-arch-linux-on-uefi-with-full-disk-encryption/)
+
+#### Establish Connectivity
+`# timedatectl set-ntp true`
+
+#### Partition
+
+Check for drives using `fdisk -l`.
+
+Let's create a disk variable to make things easier for later.
+```bash
+# DRIVE=/dev/sda
+```
+
+Wipe the partition table with `sgdisk --zap-all $DRIVE`
+
+Wipe the drive and check for any bad blocks. This can take a while.
+Run `badblocks -c 10240 -s -w -t random -v $DRIVE`
+
+For a scripted setup you can use this one-liner. Also works well in an AD-HOC setup.
+Run `sgdisk --clear --new=1:0:+550MiB --typecode1:ef00 --change-name=1:EFI --new=2:0:0 --typecode=2:8300 --change-name=2:root $DRIVE`
+
+#### Encrypt, Partition, and Mount
+
+Check the default configs that cryptsetup will run. At the bottom is shows the algorith and hash that it will run at. In this case aes-xts-512 which will split into two hashes that will show up as 256.
+
+```bash
+cryptsetup --help
+
+crytsetup -y -v luksFormat /dev/disk/by-partlabel/root
+YES
+
+cryptsetup open /dev/mapper/root cryptroot
+
+mkfs.fat -F32 /dev/disk/by-partlabel/EFI
+mkfs.ext4 /dev/mapper/cryptroot
+mount /dev/mapper/cryptroot /mnt/
+mkdir /mnt/boot
+mount /dev/sda1 /mnt/boot
+```
+
+#### Create Swapfile
+
+Create a swap at 16GB in size. 32GB = 32768.
+
+```bash
+dd if=/dev/zero of=/mnt/swapfile bs=1M count=16384 status=progress
+chmod 600 /mnt/swapfile
+mkswap /mnt/swapfile
+swapon /mnt/swapfile
+```
+
+#### Install Arch
+
+>pacstrap /mnt/arch base base-devel linux linux-firmware vim bash-completion screenfetch git cryptsetup
+
+#### Generate Filesystem Table
+
+>genfstab -U /mnt >> /mnt/etc/fstab
+
+#### Chroot Into New System
+
+>arch-chroot /mnt
+
+#### System Configuration
+
+```bash
+echo "wrk0" > /etc/hostname
+echo LANG=en_US.UTF-8 > /etc/locale.conf
+locale-gen
+ln -sf /usr/share/zoneinfo/America/Denver /etc/localtime
+```
+
+#### Define hosts in `/etc/hosts`
+```bash
+127.0.0.1   localhost
+127.0.1.1   wrk0.wretchedghost.in   wrk0
+```
+
+#### Set Root Password
+
+>passwd
+
+#### Setup Initram
+
+>
+
+#### GUI Setup
+
+```bash
+$ sudo pacman -S xorg-xinit xorg-server xorg-xauth
+```
+
+#### Packages Needed
+openssh (allows for ssh to this server/computer)
+curl (web fetcher)
+wget (web fetcher, older)
+screenfetch (cool hardware viewer)
+vim (if not already installed earlier)
+vi (root editor)
+rsync (backup files and directories)
+bash-completion (autocompletion)
+git (pull git configs)
+zip
+unzip
+thunar (file manager, with bulk rename)
+	gvfs (USB Drive support)
+	xarchiver (unzip files in gui)
+pcmanfm (basic file manager)
+wine (runs Windows programs)
+vlc (video player)
+thunderbird (great email client)
+arandr (multi monitor configuer)
+i3-gaps (the gaps make i3 cooler)
+	i3blocks (my opinion the best status bar for i3)
+		perl-json (for weather_noaa module)
+	feh (background imager/image viewer)
+	urxvt-perls (great terminal) (requires ~/.Xresources setup to look good)
+	picom (window transparency)
+	dunst (notifications)
+	rofi (nice menuing)
+	ttf-bitstream-vera (font)
+	conky (on screen graphics/other)
+	chromium (when I cant use brave)
+	midori (lightweight browser)
+	qtbrowser (vim-like browser)
+	network-manager-applet (gui icon on menu)
+	yay (to get aur) (only updates aur programs via yay -Syyu)
+		signal-browser-beta (secure messaging app)
+		caffeine-ng	(keeps screen from turning off when enabled)
+		brave-browser-beta (browser)
+i3-status
+	ttf-font-awesome (symbols)
+i3lock (integrated lock for i3)
+	xautolock (detects the lockout timer and runs i3lock via script)
+	scrot (screenshot)
+	imagemagick (converts the screenshot)
+
+For OpenVPN (remote network)
+	openvpn
+	networkmanager-openvpn (allows for gui setup of openvpn)
+	networkmanager-vpnc (creates the tun module)
+
+For Remmina (Remote desktop)
+	remmina
+		freerdp
+		xrdp (I believe is needed for vnc)
+
+For Time Sync
+	systemctl enable systemd-timesyncd.service --now
+
+For SSDs only
+	systemctl enable fstrim.time --now
+
+For laptops only
+	redshift (shifts bluelight and brightness)
+	tlp (power control)
+	tlp-rdw
+
+Reduce Swappiness
+	echo 'vm.swappiness=10' | sudo tee /etc/sysctl.d/99-swappiness.conf
+
+For Steam (Gaming)
+	(enable multilib in /etc/pacman.conf)
+	steam
+	lib32-systemd
+	(nvidia graphics)
+		I downloaded the latest driver for M4000 which is similar to the GTX 9xx series so I rannvidia and not nvidia-lts
+		nvidia
+
+For Ripping DVDs
+	makemkv (aur)
+		modprobe sg (for setting the kernel to see the optical drive. will not survive a reboot)
+
+

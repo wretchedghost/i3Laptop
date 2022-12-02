@@ -1,0 +1,301 @@
+---
+title: "WretchedGhost's Arch Install Guide"
+date: 2022-09-01T20:46:55Z
+tags: ['linux', 'arch', 'guide', 'new']                    #Tags should be ['linux', 'whatever', 'etc']
+thumbnail: "/images/btw.jpg"               #Shows on page itself ("/images/<pic.png>")
+featured_image: "/images/btw.jpg"          #Shows on main page (posts) ("/images/pic.png>")
+lastmod: "2022-10-11"
+omit_header_text: "true"    #Gets rid of annoying double title post in header)
+draft: "false"
+show_reading_time = "true"
+description: ""             
+---
+Here is a guide of my simple-ish install of Arch Linux. I use Luks and ext4. It also uses GRUB as the bootloader. This guide does not hold your hand so you will either need to research a few things you do not know or you must already know what commands and flags are needed when presented. 
+
+#### If wifi is needed
+```bash
+iwctl
+station wlan0 scan
+station wlan0 connect <SSID>
+```
+
+#### Set the date and time
+```
+timedatectl set-ntp true
+```
+
+#### Set bigger font in the tty. This is usually only needed if you are needing larger font when using a HiDPI screen.
+```bash
+setfont ter-132b
+```
+
+#### Partition the disks. Only 500MB or bigger is needed for boot partition/EFI but 512MB gives a little buffer.
+```bash
+gdisk /dev/nvme0n1
++512M ef00
+100% 8300
+```
+
+#### Create the encrypted root partion on my NVMe drive but /dev/sdx can be used if using a HDD or SSD.
+I like to call my root luks partition cryptroot but you can call it anything you like. 
+```bash
+cryptsetup luksFormat /dev/nvme0n1p2
+cryptsetup luksOpen /dev/nvme0n1p2 cryptroot
+```
+
+#### Build the filesystems
+Make sure to use the (-F32) 32 Fats flag as this will default to 16 if you dont. For the ext4 partition you will notice that it is no longer under /dev/nvme0n1p2 but rather /dev/mapper due to the way Linux organizes the Luks filesystems. Plus its easier to type /dev/mapper/cryptroot than /dev/nvmexxxxxxxxxx.
+```bash
+mkfs.vfat -F32 /dev/nvme0n1p1
+mkfs.ext4 /dev/mapper/cryptroot
+```
+
+#### Mount root and boot
+```bash
+mount /dev/mapper/cryptroot /mnt
+mkdir -p /mnt/boot
+mount /dev/nvme0n1p1 /mnt/boot
+```
+
+#### Setup the Swapfile
+I prefere a swapfile due to the ability to quickly shrink and grow the partition as needed when more or less RAM is installed. Doing a swapfile is usually not the way to get hibernation working if you need it, but rather setting up a dedicated swap partition would be best.
+
+>24576 = 24G
+or
+>32768 = 32G
+
+```bash
+dd if=/dev/zero of=/mnt/.swapfile bs=1M count=24576 status=progress
+chmod 600 /mnt/.swapfile
+mkswap /mnt/.swapfile
+swapon /mnt/.swapfile
+```
+
+#### Install the base files and generate the fstab. Also build the tmpfs.
+The tmpfs is basically a file as well on top of the / directory but allows again for dynamic changing and updating.
+```bash
+pacstrap /mnt base base-devel linux linux-firmware vim git screenfetch networkmanager grub efibootmgr intel-ucode bash-completion
+(linux-lts/linux-lts-headers, linux-zen/linux-zen-headers, linux-hardended/linux-hardended-headers can also be install or swapped out for linux/linux-headers)
+
+genfstab -U /mnt >> /mnt/etc/fstab
+
+vim /mnt/etc/fstab
+tmpfs /tmp tmpfs rw,nodev,nosuid,size=8G,noatime,mode=1700 0 0
+```
+>(Also change all relatime to noatime EXCEPT for /boot)
+
+#### Chroot into the new system drive
+```bash
+arch-chroot /mnt /bin/bash
+```
+
+#### Setup the time and make it persistant
+```bash
+ln -sf /usr/share/zoneinfo/America/Chicago /etc/localtime
+hwclock --systohc
+vim /etc/locale.gen 
+(uncomment en_US.UTF-8)
+locale-gen
+echo 'LANG=en_US.UTF-8' > /etc/locale.conf
+```
+
+#### Setup hostname and hosts files
+```bash
+echo <hostname> > /etc/hostname
+vim /etc/hosts
+
+127.0.0.1	localhost
+127.0.1.1	tpx1.wretchednet.in	tpx1
+```
+
+#### Create the root password
+```bash
+passwd
+```
+
+#### Edit the kernel hooks and tweak pacman.conf
+Add keyboard between autodetect and modconf and ecrypt between block and filesystem in the HOOKS array.
+
+```bash
+vim /etc/mkinitcpio.conf
+
+HOOKS=(base udev autodetect keyboard modconf block encrypt filesystems fsck)
+```
+
+Update the kernel modules.
+```bash
+mkinitcpio -p linux 
+```
+For linux kernel. Use linux-lts for LTS kernel, linux-hardened, and or linux-zen
+
+```bash
+vim /etc/pacman.conf
+```
+Uncommenct Color and add ILoveCandy. Uncomment multilib and the line underneath.
+
+
+#### Build grub
+Set GRUB_CMDLINE_LINUX="cryptdevice=UUID=<uuid-here>:cryptroot" and uncomment GRUB_ENABLE_CRYPTODISK=y_
+```bash
+GRUB_CMDLINE_LINUX="cryptdevices=UUID=XXXX-XXXX-XXXX:cryptroot"
+```
+
+```bash
+blkid -s UUID -o value /dev/nvme0n1p2 >> /etc/default/grub
+```
+
+```bash
+vim /etc/default/grub
+
+grub-install --target=x86_64-efi --efi-directory=/boot --bootloader-id=ARCHLINUX
+grub-mkconfig -o /boot/grub/grub.cfg
+```
+
+#### Make sure wifi will work after reboot
+```bash
+systemctl enable NetworkManager
+```
+
+#### Exit out of the chrooted system
+```bash
+exit 
+```
+
+#### Reboot
+```bash
+reboot
+```
+
+You should now have a working Arch system albeit with no additional users nor GUI, but a great base to then start building a clean and simple workstation. 
+
+#### Extras
+I found this blog post that is almost exactly how I want my arch setup to be albeit with some modifications that I will note here in the page.
+[Bespian's Arch install](https://blog.bespinian.io/posts/installing-arch-linux-on-uefi-with-full-disk-encryption/)
+
+
+#### Packages Needed
+Needed for GUI
+```bash
+$ sudo pacman -S xorg-xinit xorg-server xorg-xauth
+```
+
+These are the packages I need to have a computer running the way I use it via i3-gaps and whatnot.
+
+* openssh (Allows for secure shell to and from other servers/computers)
+* curl (CLI web fetcher)
+* wget (CLI web fetcher, older but usually built in to most systems)
+* neofetch (Cooler hardware viewer)
+* vim (if not already installed earlier)
+* vi (editor)
+* rsync (Archiver that can backup files and directories)
+* bash-completion (bash Auto-completion with Tab)
+* git (Pull git configs)
+* zip (For zipping files)
+* unzip (For unzipping .zip files)
+#### GUI programs
+#### i3
+* i3-gaps (The gaps make i3 cooler and extends certain capabilities not found in i3 vanilla)
+	* i3blocks (IMO the best status bar for i3)
+		* perl-json (For weather_noaa module)
+	    * ttf-font-awesome (Cool font symbols)
+	    * networkmanager-openvpn (Needed for OpenVPN via the applet)
+	* feh (My prefered wallpaper program + image viewer)
+	* urxvt-perls (Great terminal emulator) (requires ~/.Xresources setup to look good)
+	* picom (Window transparency. Updated fork of compton)
+	* dunst (Desktop notification)
+	* rofi (Nice menuing for programs)
+	* ttf-bitstream-vera (Font)
+	* ttf-dejavu (Font)
+	* ttf-monoid (Font)
+	* ttf-roboto (Font)
+	* ttf-ubuntu-font-family (Font)
+	* ttf-hack (Font)
+	* ttf-droid (Font)
+	* conky (On-screen hardware display. Think HUD)
+	* network-manager-applet (GUI icon on i3blocks for Network-Manager)
+	* xfce4-clipman (Good clipboard manager)
+    * arandr (Multi monitor configuerer, and profile saver and loader)
+    * volumeicon (Volume icon on i3blocks bar)
+    * lxapperance (For tweaking icon and window themes)
+* i3lock (Integrated lock for i3)
+	* xautolock (Detects the lockout timer and runs i3lock via script)
+    * scrot (Takes screenshot from the command line)
+	* imagemagick (Converts the screenshot)
+* firefox (browser)
+* midori (Lightweight browser that allows for https login on old tls 1.1 or older)
+* thunar (File manager, with bulk rename)
+	* gvfs (USB Drive support)
+	* gvfs-smb (SMB support)
+	* gvfs-mtp (Android support)
+* pcmanfm (Basic file manager)
+* nautilus (Gnome/ubuntu file manager. Has many builtin features that pcmanfm and thunar don't have built in.)
+* wine (Runs Windows programs)
+* vlc (Run anything under the sun video player)
+* totem (Lighter weight video player)
+* thunderbird (Great email client)
+* alsa (For sound)
+* pipewire (systemd sound controller)
+
+* yay (Go-Lang built AUR (Arch User Repo))
+	* signal-browser-beta-bin (The secure messaging app in desktop form)
+	* qtbrowser (Vim-like browser, only found in AUR)
+	* caffeine-ng (Keeps screen from turning off when enabled)
+	* blueberry (Bluetooth GUI manager)
+	* firefox-profile-service (Setup profiles in firefox with firefox profile add-in extension)
+	* spotify
+
+Desktop Manager - lightdm
+    * lightdm (Nice looking login screen, teamviewer requires a DM. I prefere lightdm to gdm (gnome DM) or others)
+        * lightdm-slick-greeter (nicer look to default lightdm)
+
+* android-tools (For installing GrapheneOS on phones from Linux)
+* cups (Printing)
+* cifs 
+* ntfs-3g
+* nfs-utils (Enables NFS client on the local machine)
+* downgrade (For downgrading programs on Arch)
+
+* deluge (Torrenting)
+* libreoffice-still (Stable version of Libreoffice)
+* manuskript (Cohesive book/manuscript writing program)
+* pavucontrol (GUI for sound management)
+
+#### Themes
+* papirus-icon-theme
+* papirus-maia-icon-theme
+
+For OpenVPN+Tailscale (Remote network)
+	* openvpn
+	* networkmanager-openvpn (Allows for gui setup of openvpn)
+	* networkmanager-vpnc (Creates the tun module)
+	* tailscale (Point-to-point tunnelling)
+
+For Remmina (Remote desktop)
+	* remmina
+		* freerdp
+		* xrdp (I believe is needed for vnc)
+
+For Time Sync
+	* systemctl enable systemd-timesyncd.service --now
+
+For SSDs only but NOT for NVMes
+	* systemctl enable fstrim.time --now
+
+For laptops only
+	* redshift (shifts bluelight and brightness)
+	* tlp (power control)
+	* tlp-rdw
+
+Reduce Swappiness
+	* echo 'vm.swappiness=10' | sudo tee /etc/sysctl.d/99-swappiness.conf 
+
+For Steam (Gaming)
+	* (enable multilib in /etc/pacman.conf)
+	* steam-native-runtime (will run through the desired libraries and packages, ie Nvidia, Intel, or AMD)
+	    * If you didn't install steam use these below if you have a modern-ish nvidia card
+		* nvidia-dkms
+		* nvidia
+
+For Ripping DVDs
+	* makemkv (aur)
+		* $modprobe sg (echo sg >> /etc/modules-load.d/sg.conf)(for setting the kernel to see the optical drive. will not survive a reboot)

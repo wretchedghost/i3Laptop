@@ -1,0 +1,10 @@
+#!/bin/sh
+/usr/bin/feh --no-fehbg --bg-fill \
+~/Pictures/Portugal/portugal3.jpg \
+~/Pictures/Portugal2.jpg \
+~/Pictures/Portugal/port.jpg \
+~/Pictures/Portugal/portugal4.jpg \
+~/Pictures/Portugal/porto2.jpg \
+~/Pictures/Portugal/porto1.jpg \
+~/Pictures/Portugal/portugal1.jpg \
+~/Pictures/Portugal/porto.jpg 

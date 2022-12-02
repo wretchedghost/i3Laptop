@@ -1,0 +1,17 @@
+---
+title: "Weird Issue with Tailscale and How to Fix it on Arch Linux"
+date: 2022-10-16T01:34:18Z
+tags: ['linux', 'arch', 'tailscale', 'vpn']                    #Tags should be ['linux', 'whatever', 'etc']
+thumbnail: ""               #Shows on page itself ("/images/<pic.png>")
+featured_image: ""          #Shows on main page (posts) ("/images/pic.png>")
+lastmod: ""
+omit_header_text: "true"    #Gets rid of annoying double title post in header)
+draft: "true"
+description: ""             
+---
+
+On my distro of choice, Arch BTW, I had a weird issue where I don't see a proper solution for. My Tailscale would not let me turn it on and would give me and error where the server and the installed version are mismatched.
+
+insert pic
+
+After doing some research I found that the backend, the installed version and the CLI version must have the same version. I did not find a way for Arch.

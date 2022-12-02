@@ -1,0 +1,15 @@
+---
+title: "Living the Junky Life_command Line Junky"
+date: 2022-06-01T20:50:30Z
+tags: []                    #Tags should be ['linux', 'whatever', 'etc']
+thumbnail: ""               #Shows on page itself ("/images/<pic.png>")
+featured_image: ""          #Shows on main page (posts) ("/images/pic.png>")
+lastmod: ""
+omit_header_text: "true"    #Gets rid of annoying double title post in header)
+draft: "true"
+description: ""             
+---
+<!-- Use the living the miata life pics and maybe add them using laptops or the other picture  when they are posing in the office and say you aint living the commandline life unless you are typing with shades. 
+
+Perhaps also do a ghost-ride the whip but with a terminal where it runs off of one laptop to the next one -->
+I live the Command Line Junky Life.

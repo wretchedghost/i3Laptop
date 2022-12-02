@@ -1,0 +1,11 @@
+---
+title: "Template"
+date: 2022-06-19T01:34:18Z
+tags: []                    #Tags should be ['linux', 'whatever', 'etc']
+thumbnail: ""               #Shows on page itself ("/images/<pic.png>")
+featured_image: ""          #Shows on main page (posts) ("/images/pic.png>")
+lastmod: ""
+omit_header_text: "true"    #Gets rid of annoying double title post in header)
+draft: "true"
+description: ""             
+---
