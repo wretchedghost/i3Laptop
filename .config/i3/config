@@ -49,7 +49,7 @@ exec xautolock -detectsleep -time 10 -locker "$HOME/.config/i3/i3lock/lock_and_b
 # autotiling script
 # https://github.com/nwg-piotr/autotiling
 # `yay -S autotiling ;) (it is in AUR)
-exec_always --no-startup-id autotiling
+exec_always --no-startup-id autotiling-rs
 
 #----------------------------------------------------------------SCRATCHPAD
 
