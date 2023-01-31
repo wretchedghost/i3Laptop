@@ -3,7 +3,7 @@
 # Some cleanup by Luke.
 
 [ -z "$1" ] && echo "No direction provided" && exit 1
-distanceStr="20 px or 20 ppt"
+distanceStr="2 px or 2 ppt"
 
 moveChoice() {
   i3-msg resize "$1" "$2" "$distanceStr" | grep '"success":true' || \

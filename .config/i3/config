@@ -15,7 +15,8 @@ focus_follows_mouse yes
 # Right-Click+$mod to resize windows
 floating_modifier $mod
 force_focus_wrapping no
-font pango:Noto Sans Regular, FontAwesome, Monoid Mono 12
+#font pango:DejaVu Sans Mono, FontAwesome, Monoid Mono 11
+font pango: Noto Sans Regular, FontAwesome, Monoid Mono 12
 floating_maximum_size 1920 x 1080
 floating_minimum_size 85 x 85
 popup_during_fullscreen smart
@@ -25,12 +26,15 @@ workspace_auto_back_and_forth yes
 
 hide_edge_borders none
 
+show_marks yes
+
 #---------------------------------------------------------STARTUP PROGRAMS
 
 exec --no-startup-id /usr/bin/nm-applet
 exec --no-startup-id blueberry-tray
-exec --no-startup-id /usr/bin/xfce4-clipman        # Clipboard
-exec --no-startup-id /usr/bin/thunderbird
+#exec --no-startup-id /usr/bin/parcellite        # Clipboard
+exec --no-startup-id /usr/bin/xfce4-climpan       # Clipboard
+exec --no-startup-id sleep 7 && /usr/bin/thunderbird
 exec --no-startup-id /usr/bin/numlockx
 exec --no-startup-id /usr/bin/picom -cbCf
 exec --no-startup-id /usr/bin/dunst
@@ -38,17 +42,20 @@ exec --no-startup-id /usr/bin/volumeicon
 exec --no-startup-id /usr/bin/caffeine-ng
 exec --no-startup-id $HOME/.fehbg
 exec --no-startup-id /usr/bin/redshift
-exec --no-startup-id /usr/bin/anydesk
-exec --no-startup-id /usr/bin/barrier
-exec --no-startup-id conky -d -c $HOME/.config/i3/conky/conky-left
+exec --no-startup-id sleep 10 && /usr/bin/anydesk
+exec --no-startup-id /usr/bin/conky -d -c $HOME/.config/i3/conky/conky-left
+exec --no-startup-id $HOME/.screenlayout/monitor.sh
+
 # runs notify-send in critcal mode and stays up for 10 seconds (10000 mili)
-exec xautolock -detectsleep -time 10 -locker "$HOME/.config/i3/i3lock/lock_and_blur.sh" \
+exec /usr/bin/xautolock -detectsleep -time 10 -locker "$HOME/.config/i3/i3lock/lock_and_blur.sh" \
 	-notify 30 \
-	-notifier "notify-send -u critical -t 10000 -- 'locking screen in 30 seconds'"
+	-notifier "notify-send -u critical -t 10000 -- 'locking screen in 30 seconds'" \
+	-notify 10 \
+	-notifier "notify-send -u critical -t 5000 -- 'locking screen in 10 seconds'"
 
 # autotiling script
 # https://github.com/nwg-piotr/autotiling
-# `yay -S autotiling ;) (it is in AUR)
+# yay -S autotiling-rs
 exec_always --no-startup-id autotiling-rs
 
 #----------------------------------------------------------------SCRATCHPAD
@@ -65,9 +72,9 @@ gaps outer 5
 
 bindsym $mod+Shift+space floating toggle
 bindsym $mod+space focus mode_toggle
-bindsym $mod+Shift+c reload
+bindsym $mod+Shift+c reload 
 bindsym $mod+Shift+r restart
-bindsym $mod+Shift+e exec "i3-nagbar -t warning -m 'You pressed the exit shortcut. This will end your X session.' \
+bindsym $mod+Shift+e exec "/usr/bin/i3-nagbar -t warning -m 'You pressed the exit shortcut. This will end your X session.' \
     -b 'Yes, exit i3' 'i3-msg exit'"
 bindsym $mod+Shift+Escape	exec --no-startup-id prompt "Exit i3?" \
     "i3-msg exit"
@@ -76,88 +83,100 @@ bindsym $mod+Shift+q kill
 bindsym $mod+Shift+F11 fullscreen toggle
 bindsym $mod+s layout stacking
 bindsym $mod+w layout toggle tabbed splith
-bindsym $mod+e layout toggle split
-bindsym $mod+semicolon split h;exec notify-send 'tile horizontally'
-bindsym $mod+v split v;exec notify-send 'tile vertically'
-bindsym $mod+q split toggle; exec notify-send 'tile toggle'
+bindsym $mod+e layout toggle split 
+bindsym $mod+semicolon split h;exec /usr/bin/notify-send 'tile horizontally'
+bindsym $mod+v split v;exec /usr/bin/notify-send 'tile vertically'
+bindsym $mod+q split toggle; exec /usr/bin/notify-send 'tile toggle'
 
 #--------------------------------------------------------------RUN PROGRAMS
 
-#bindsym $mod+d exec --no-startup-id rofi -show drun
+#bindsym $mod+d exec --no-startup-id /usr/bin/rofi -show drun
 bindsym $mod+f exec --no-startup-id /usr/bin/firefox
-bindsym $mod+i exec --no-startup-id urxvt -e htop 
-bindsym $mod+m exec --no-startup-id wine ~/Downloads/winbox64.exe -name WinBox
+bindsym $mod+i exec --no-startup-id /usr/bin/urxvt -e /usr/bin/htop 
+bindsym $mod+m exec --no-startup-id /usr/bin/wine ~/Downloads/winbox64.exe -name WinBox
 bindsym $mod+n exec --no-startup-id /bin/bash ~/bin/visionclientlauncher/app/visionclientlauncher.sh
-bindsym $mod+x exec --no-startup-id $HOME/.config/i3/i3lock/lock_and_blur.sh 
-bindsym $mod+F3 exec --no-startup-id pcmanfm 
-#bindsym $mod+F12 exec --no-startup-id /usr/bin/brightnessctl s +10%
-#bindsym $mod+F11 exec --no-startup-id /usr/bin/brightnessctl s 10%-
+bindsym $mod+p exec --no-startup-id $HOME/.config/i3/promote-window
+bindsym $mod+x exec --no-startup-id $HOME/.config/i3/i3lock/lock_and_blur.sh
+bindsym $mod+Shift+comma exec --no-startup-id /usr/bin/autorandr mobile 
+bindsym $mod+Shift+period exec --no-startup-id /usr/bin/autorandr work
+bindsym $mod+F3 exec --no-startup-id /usr/bin/pcmanfm 
+bindsym $mod+F12 exec --no-startup-id /usr/bin/brightnessctl --output eDP1 set +20%
+bindsym $mod+F11 exec --no-startup-id /usr/bin/brightnessctl --output eDP1 set -20%
 
 # Take a screenshot with scrot
-bindsym $mod+F10 --release exec --no-startup-id scrot -d 5; exec notify-send 'Taking a screenshot. 5 second timer'
-bindsym $mod+Shift+F10 --release exec --no-startup-id scrot -d 5 -s; exec notify-send 'Select a window. 5 second timer.'
+bindsym $mod+F10 --release exec --no-startup-id /usr/bin/scrot -d 5; exec notify-send 'Taking a screenshot. 5 second timer'
+bindsym $mod+Shift+F10 --release exec --no-startup-id /usr/bin/scrot -d 5 -s; exec notify-send 'Select a window. 5 second timer.'
 bindsym Print exec /usr/bin/scrot ~/Pictures/%Y%m%d-screenshot.png && notify-send 'Screenshot saved to ~/Pictures/$(date +%Y%m%d")-screenshot.png'
 
-bindsym $mod+Return exec --no-startup-id urxvt 
-bindsym $mod+Shift+Return exec --no-startup-id urxvt -name term
+bindsym $mod+Return exec --no-startup-id /usr/bin/urxvt 
+bindsym $mod+Shift+Return exec --no-startup-id /usr/bin/urxvt -name term
 
 # volume
-bindsym XF86AudioRaiseVolume exec amixer -D pulse sset Master 5%+ && pkill -RTMIN+1 /usr/bin/i3blocks
-bindsym XF86AudioLowerVolume exec amixer -D pulse sset Master 5%- && pkill -RTMIN+1 /usr/bin/i3blocks
+#bindsym XF86AudioRaiseVolume exec amixer -D pulse sset Master 5%+ && pkill -RTMIN+1 i3blocks
+#bindsym XF86AudioLowerVolume exec amixer -D pulse sset Master 5%- && pkill -RTMIN+1 i3blocks
 
-# Or For a Granular Volume Control 
+# Granular Volume Control
 bindsym $mod+XF86AudioRaiseVolume exec amixer -D pulse sset Master 1%+ && pkill -RTMIN+1 i3blocks
 bindsym $mod+XF86AudioLowerVolume exec amixer -D pulse sset Master 1%- && pkill -RTMIN+1 i3blocks
 
 # Mute
-bindsym XF86AudioMute exec amixer sset Master toggle && killall -USR1 i3blocks
+#bindsym XF86AudioMute exec amixer sset Master toggle && killall -USR1 i3blocks
 
 # Backlight control
-bindsym XF86MonBrightnessUp exec /usr/bin/xbacklight +5 && notify-send "Brightness - $(xbacklight -get | cut -c1-2)%"
-bindsym XF86MonBrightnessDown exec /usr/bin/xbacklight -5 && notify-send "Brightness - $(xbacklight -get | cut -c1-2)%"
-
-# Redirect sound to headphones
-#bindsym $mod+p exec /usr/local/bin/switch-audio-port
+bindsym XF86MonBrightnessUp exec /usr/bin/xbacklight +5 && notify-send "Brightness - $(xbacklight -get | cut -c1-2)%
+bindsym XF86MonBrightnessDown exec /usr/bin/xbacklight -5 && notify-send "Brightness - $(xbacklight -get | cut -c1-2)%
 
 # Caps Indicator 
 bindsym --release Caps_Lock exec pkill -SIGRTMIN+11 /usr/bin/i3blocks
 #bindsym --release Num_Lock exec pkill -SIGRTMIN+11 i3blocks
 
+bindsym XF86AudioRaiseVolume exec amixer -q set Master 5%+ unmute
+bindsym XF86AudioLowerVolume exec amixer -q set Master 5%- unmute
+bindsym XF86AudioMute exec amixer -D pulse set Master 1+ toggle
+
 # Open new empty workspace
 bindsym $mod+Shift+n exec $HOME/.config/i3/scripts/empty_workspace
 
-# Power Profiles menu switcher (rofi)
+# Power Profile menu switch (rofi)
 bindsym $mod+Shift+t exec ~/.config/i3/scripts/power-profiles
 
 # exit-menu
-bindsym $mod+p exec ~/.config/i3/scripts/powermenu
+bindsym $mod+Shift+g exec ~/.config/i3/scripts/powermenu
 
-# set powersavings for display:
+# set powersavings for display: 
 exec --no-startup-id xset s 480 dpms 600 600 600
 
 #-----------------------------------------------------------------FLOATING WINDOWS
 
-for_window [class="Pavucontrol"] floating enable
+for_window [class="Pavucontrol" instance="pavucontrol"] floating enable
 for_window [class="Galculator"] floating enable border pixel 1
-for_window [title="File Transfer*"] floating enable
+for_window [title="File Transfer"] floating enable
+for_window [class="Blueberry.py" instance="blueberry.py"] floating enable
+for_window [class="Bluetooth-sendto" instance="bluetooth-sendto"] floating enable
+for_window [window_role="About"] floating enable
 for_window [class="Pcmanfm"] floating enable move position right
     for_window [class="Pcmanfm"] resize set 820 640
+for_window [class="Thunar"] floating enable move position right
+    for_window [class="Thunar"] resize set 820 640
+for_window [class="Org.gnome.Nautilus"] floating enable move position right
+    for_window [class="Org.gnome.Nautilus"] resize set 820 640
 for_window [class="Lxappearance"] floating enable stick enable border normal
 for_window [class="Arandr"] floating enable
     for_window [class="Arandr"] resize set 640 480
 for_window [class="(?i)gsimplecal"] floating enable, move position mouse, move down 28 px
 for_window [title="term"] floating enable move position center
-    for_window [title="term"] resize set 900 20
+    for_window [title="term"] resize set 900 40
 for_window [title="^WinBox"] floating enable
     for_window [title="^WinBox"] resize set 720 480
 
 # Sticky floating windows. Only takes effect if the windows is floating
-for_window [instance="URxvt"] sticky enable
+for_window [instance="^URxvt"] sticky enable
 for_window [class="Brave*"] sticky enable
 for_window [class="(?i)firefox*"] sticky enable
 for_window [class="^org.remmina.Remmina"] sticky enable
 for_window [class="Thunar"] sticky enable
 for_window [class="Pcmanfm"] sticky enable
+for_window [class="org.gnome.Nautilus"] sticky enable
 for_window [class="^Arandr"] sticky enable
 for_window [title="^WinBox"] sticky enable
 
@@ -168,8 +187,8 @@ set $ws2 "2:"
 set $ws3 "3:"
 set $ws4 "4:"
 set $ws5 "5:"
-set $ws6 "6:"
-set $ws7 "7:"
+set $ws6 "6:"
+set $ws7 "7:"
 set $ws8 "8:"
 set $ws9 "9:"
 set $ws10 "10:"
@@ -178,21 +197,24 @@ set $ws10 "10:"
 
 #workspace "7:" output DP-1
 #workspace "8:" output DP-1
-#workspace "9:" output eDP-2
-#workspace "10:" output eDP-2
+#workspace "3:" output DP-5
+#workspace "9:" output DP-5
+#workspace "10:" output DP-5
 
 # Open applications on specific workspaces 
-assign [class="Brave*"] $ws1
+assign [class="Brave"] $ws1
 assign [class="(?i)firefox"] $ws1
 assign [class="Pale Moon"] $ws1
 assign [class="Midori"] $ws1
-assign [class="Librewolf"] $ws1
 assign [class="(?i)thunderbird"] $ws3
-assign [class="mail"] $ws3         # Added due to thunderbird not automatically moving to workspace 3
+assign [class="mail"] $ws3          # Added due to thunderbird not automatically moving to workspace 3
 assign [class="Signal"] $ws4
-assign [class="Gimp"] $ws5
-#assign [class="^org.remmina.Remmina"] $ws6
+assign [class="Steam"] $ws5
+#assign [class="org.remmina.Remmina"] $ws6
+assign [class="Libreoffice-*"] $ws6
 assign [class="Manuskript"] $ws6
+assign [class="Obsidian"] $ws6
+assign [class="Gimp-*"] $ws7
 assign [class="Spotify*"] $ws8
 assign [class="TeamViewer"] $ws9
 assign [class="Anydesk"] $ws9
@@ -210,19 +232,22 @@ bindsym $mod+Right focus right
 bindsym $mod+Up focus up
 bindsym $mod+Down focus down 
 
-bindsym $mod+Shift+h move left 40 px
-bindsym $mod+Shift+j move down 40 px
-bindsym $mod+Shift+k move up 40 px
-bindsym $mod+Shift+l move right 40 px
+bindsym $mod+Shift+h move left 10 px
+bindsym $mod+Shift+j move down 10 px
+bindsym $mod+Shift+k move up 10 px
+bindsym $mod+Shift+l move right 10 px
 
 for_window [class="Brave*"] focus
-for_window [class="(?i)firefox"] focus
-for_window [class="Signal"] focus
-for_window [class="TeamViewer"] focus
-for_window [class="Spotify*"] focus
+for_window [class="(?i)firefox*"] focus
+for_window [class="(?i)firefox"] title_format "<span foreground='red'>%title</span>" 		# print window title of firefox windows red
+#for_window [class="Signal"] focus
+for_window [class="Manuskript"] focus
+#for_window [class="TeamViewer"] focus
+#for_window [class="Spotify*"] focus
 #for_window [class="org.remmina.Remmina"] focus
-for_window [class="Gimp"] focus
-for_window [class="com-inductive*"] focus
+#for_window [class="Gimp-*"] focus
+#for_window [class="com-inductive*"] focus
+#for_window [class=".*"] title_format "<b>%title</b>" 	# print all window title in bold
 
 #-----------------------------------------------------------------WINDOW SPLITTING
 
@@ -290,8 +315,8 @@ bindsym $mod+Shift+p exec --no-startup-id ~/.config/i3/i3resize.sh right
 
 for_window [window_role="popup"] floating enable
 for_window [class=".*"] border pixel 4
-for_window [class="^Links$" title="^Links$"] floating disabled
-for_window [title="^Event Tester$" id="0x1000001"] floating enable
+for_window [class="Links$" title="^Links$"] floating enable
+for_window [title="Event Tester$" id="0x1000001"] floating enable
 
 #--------------------------------------------------------------------BRAVE WINODWS
 
@@ -311,7 +336,7 @@ for_window [class="^terminology$"] floating disabled
 #---------------------------------------------------------------------GIMP WINDOWS
 
 for_window [class="Gimp$" title="GNU Image Manipulation Program$"] floating disabled
-for_window [class="Gimp$" title="  GIMP$"] floating disabled
+for_window [class="Gimp$" title=" ? GIMP$"] floating disabled
 for_window [class="Gimp$" title="Tool Options$"] floating enable
 for_window [class="Gimp$" title="Quit GIMP$"] floating enable
 
@@ -332,89 +357,84 @@ for_window [class="Steam$" title="Steam - News "] floating enable
 for_window [class="Steam$" title="Steam Library Folders$"] floating enable
 for_window [class="Steam$" title="Validating Steam files - "] floating enable
 
-#---------------------------------------------------------------------------LINKS2
+#--------------------------------------------------------------LINKS2
 
 for_window [class="^Links$" title="^Links - "] floating enable
 
-#-------------------------------------------------------------THEME COLORS
+#--------------------------------------------------------------THEME COLORS
 
-# Color Options
+# wisteria #bdb5d5 
+# purple #800080 
+# light violet #cf9fff 
+# light purple #cbc3e3 
+# dark purple #301934 
+# dark pink #aa336a 
+# crimson #dc143c 
+# carmine #d70040 
+# cherry #d2042d 
 
-# purples/pinks/reds
-# amaranth #9f2b68
-# tyrian purple #630330
-# wisteria #bdb5d5
-# purple #800080
-# light violet #cf9fff
-# light purple #cbc3e3
-# dark purple #301934
-# dark pink #aa336a
-# crimson #dc143c
-# carmine #d70040
-# cherry #d2042d
+# oranges 
+# amber #ffbf00 
+# golden yellow #ffc000 
+# orange #ffa500 
+# pumpkin orange #ff7518 
+# tangerine # f08000 
+# safety orange #ff5f15 
 
-# oranges
-# amber #ffbf00
-# golden yellow #ffc000
-# orange #ffa500
-# pumpkin orange #ff7518
-# tangerine # f08000
-# safety orange #ff5f15
+# yellows 
+# cadmium yellow # fdda0d 
+# gold #ffd700 
+# lemon yellow # fafa33 
+# saffron #f4c430 
 
-# yellows
-# cadmium yellow # fdda0d
-# gold #ffd700
-# lemon yellow # fafa33
-# saffron #f4c430
-
-# grays
-# ash gray #b2b3b5
-# blue gray #7393b3
-# charcoal #36454f
-# glaucous #6082b6
-# platinum #e5e4e2
-# silver #c0c0c0
-# slate gray #708090
-# smoke #848884
+# grays 
+# ash gray #b2b3b5 
+# blue gray #7393b3 
+# charcoal #36454f 
+# glaucous #6082b6 
+# platinum #e5e4e2 
+# silver #c0c0c0 
+# slate gray #708090  
+# smoke #848884 
 # steel gray #71797e
 
-
-# class                          border  backgr. text    indic.  child_border
-client.focused				    #556064 #556064 #80fff9 #fdf6e3
-client.focused_inactive	        #2f3d44 #2f3d44 #1abc9c #454958
+# class                         border  backgr. text    indic.  child_border
+client.focused			        #556064 #556064 #80fff9 #fdf6e3 
+client.focused_inactive	        #2f3d44	#2f3d44 #1abc9c #454958 
 client.unfocused                #2f3d44 #2f3d44 #1abc9c #454958
-client.urgent				    #cb4b16 #fdf6e3 #1abc9c #268bd2
-client.placeholder              #000000 #0c0c0c #ffffff #000000
-client.background			    #2b2b2b
+client.urgent			        #3B89B5	#3B89B5 #a5a5a5 #85678F
+client.placeholder              #000000 #0c0c0c #ffffff #000000 
+client.background		        #2b2b2b
 
 #--------------------------------------------------------------BAR OPTIONS
 
-# Single Screen
+# Single screen
 bar {
 	position top
 	output primary
 	output eDP1
-        status_command i3blocks -c ~/.config/i3/i3blocks/i3blocks
+        status_command /usr/bin/i3blocks -c ~/.config/i3/i3blocks/i3blocks
         tray_output eDP1
         tray_padding 2
 		colors {
 		    background #222d31 # menubar color
-		    statusline #f9faf9 # menubar font color
-		    separator #454947  # menubar separtator color
-		    #                  border  backgr. text
-            focused_workspace  #5d12b3 #5d12b3 #ededed # menubar focused color
-            active_workspace   #595B5B #353836 #FDF6E3
-            inactive_workspace #222d31 #222D31 #EEE8D5
-            binding_mode       #16a085 #2C2C2C #F9FAF9
-            #urgent_workspace   #800080 #800080 #E5201D
-            urgent_workspace   #953553 #953553 #ededed
+		    statusline #f9faf9 # menubar color
+		    separator #454947
+
+		    #		          border  backgr. text			 
+		    focused_workspace #5d12b3 #5d12b3 #ededed
+		    active_workspace #595b5b #353836 #fdf6e3
+		    inactive_workspace #222d31 #222d31 #eee8d5
+		    binding_mode #16a085 #2c2c2c #e5201d
+		    urgent_workspace #953553 #953554 #ededed
 	}
 }
 
 #bar {
 #	position top
-#	output DP-2
-#        status_command i3blocks -c ~/.config/i3blocks/i3blocks
+#	output DP-5
+#        #status_command /usr/bin/i3blocks -c ~/.config/i3/i3blocks/i3blocks
+#        status_command /usr/bin/i3blocks -c ~/.config/i3/i3blocks/i3blocks_alt
 #		colors {
 #			background #111111
 #	}
@@ -425,26 +445,24 @@ bar {
 # FOR TESTING
 #bindsym $mod+F12 exec "notify-send Hello, i3"
 #bindsym $mod+F12 exec "notify-send \\"Hello, i3; from $USER\\""
+#!/bin/sh
+
 
 #-----------------------------------------------------------------ROFI
+##################################### 
+# Application menu handled by rofi: # 
+##################################### 
 
-#####################################
-# Application menu handled by rofi: #
-#####################################
+## rofi bindings fancy application menu ($mod+d /F9 optional disabled) 
 
-## rofi bindings fancy application menu ($mod+d /F9 optional disabled)
+bindsym $mod+d exec rofi -modi drun -show drun -config ~/.config/rofi/rofidmenu.rasi 
+#bindsym F9 exec rofi -modi drun -show drun \ 
+#    -config ~/.config/rofi/rofidmenu.rasi 
 
-bindsym $mod+d exec rofi -modi drun -show drun \
-		-config ~/.config/rofi/rofidmenu.rasi
+## rofi bindings for window menu ($mod+t /F10 optional disabled) 
 
-#bindsym F9 exec rofi -modi drun -show drun \
-#		-config ~/.config/rofi/rofidmenu.rasi
+#bindsym $mod+t exec rofi -show window \ 
+#    -config ~/.config/rofi/rofidmenu.rasi
 
-## rofi bindings for window menu ($mod+t /F10 optional disabled)
-
-bindsym $mod+t exec rofi -show window \
-		-config ~/.config/rofi/rofidmenu.rasi
-
-#bindsym F10 exec rofi -show window \
-#		-config ~/.config/rofi/rofidmenu.rasi
-
+#bindsym F10 exec rofi -show window \ 
+#   -config ~/.config/rofi/rofidmenu.rasi
