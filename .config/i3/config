@@ -15,7 +15,6 @@ focus_follows_mouse yes
 # Right-Click+$mod to resize windows
 floating_modifier $mod
 force_focus_wrapping no
-#font pango:DejaVu Sans Mono, FontAwesome, Monoid Mono 11
 font pango: Noto Sans Regular, FontAwesome, Monoid Mono 12
 floating_maximum_size 1920 x 1080
 floating_minimum_size 85 x 85
@@ -32,7 +31,6 @@ show_marks yes
 
 exec --no-startup-id /usr/bin/nm-applet
 exec --no-startup-id blueberry-tray
-#exec --no-startup-id /usr/bin/parcellite        # Clipboard
 exec --no-startup-id /usr/bin/xfce4-climpan       # Clipboard
 exec --no-startup-id sleep 7 && /usr/bin/thunderbird
 exec --no-startup-id /usr/bin/numlockx
@@ -247,7 +245,7 @@ for_window [class="Manuskript"] focus
 #for_window [class="org.remmina.Remmina"] focus
 #for_window [class="Gimp-*"] focus
 #for_window [class="com-inductive*"] focus
-#for_window [class=".*"] title_format "<b>%title</b>" 	# print all window title in bold
+for_window [class=".*"] title_format "<b>%title</b>" 	# print all window title in bold
 
 #-----------------------------------------------------------------WINDOW SPLITTING
 
