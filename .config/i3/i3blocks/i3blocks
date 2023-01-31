@@ -130,7 +130,7 @@ markup=pango
 # Show the current power-profile
 [ppd-status]
 command=~/.config/i3/scripts/ppd-status
-interval=5
+interval=2
 
 [keyindicator]
 command=$HOME/.config/i3/i3blocks/keyindicator
