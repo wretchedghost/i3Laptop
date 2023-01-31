@@ -1,2 +1,2 @@
 #!/bin/sh
-/usr/bin/feh --no-fehbg --bg-fill '/home/wretchedghost/Pictures/Portugal/portugal3.jpg' '/home/wretchedghost/Pictures/Portugal/portugal2.jpg' '/home/wretchedghost/Pictures/Portugal/port.jpg' '/home/wretchedghost/Pictures/Portugal/portugal4.jpg' '/home/wretchedghost/Pictures/Portugal/porto2.jpg' '/home/wretchedghost/Pictures/Portugal/porto1.jpg' '/home/wretchedghost/Pictures/Portugal/portugal1.jpg' '/home/wretchedghost/Pictures/Portugal/porto.jpg' 
+/usr/bin/feh --no-fehbg --bg-fill -z -f -r 'Pictures/Portugal/' 
