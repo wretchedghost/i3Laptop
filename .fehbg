@@ -1,2 +1,2 @@
 #!/bin/sh
-/usr/bin/feh --no-fehbg --bg-fill -z -f -r 'Pictures/Portugal/' 
+/usr/bin/feh --no-fehbg --bg-fill --recursive -zf 'Pictures/Portugal/' 
